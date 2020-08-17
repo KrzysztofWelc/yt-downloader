@@ -1,4 +1,4 @@
-import re, os, sys, pprint
+import re, os, sys, pprint, shutil
 from pytube import YouTube
 from moviepy.editor import *
 from pydub import AudioSegment
@@ -6,16 +6,20 @@ from .utils import to_seconds, download_image
 
 
 def main():
-    yt = YouTube(sys.argv[1])
+    url = sys.argv[1]
+    yt = YouTube(url)
     author = yt.author
     title = yt.title
-    cover = download_image(yt.thumbnail_url)
+    os.mkdir('./tmp')
     try:
         splitable = bool(sys.argv[2])
     except IndexError:
         splitable = None
+    download_dir = './tmp' if splitable else './downloads'
+    cover = download_image(yt.thumbnail_url, './tmp')
 
-    mp4_file = yt.streams.filter(file_extension='mp4').first().download()
+
+    mp4_file = yt.streams.filter(file_extension='mp4').first().download(output_path=download_dir)
     file, extension = os.path.splitext(mp4_file)
     mp3_file = file+'.mp3'
 
@@ -28,6 +32,8 @@ def main():
 
     timestamps = []
     if splitable:
+        title = title.replace('/', '|')
+        os.mkdir('./downloads/'+title)
         desc = yt.description.splitlines()
         for line in desc:
             if re.search('[0-9]{1,2}:[0-9]{2}', line):
@@ -60,10 +66,8 @@ def main():
                 end = whole.duration_seconds*1000
                 song = whole[start:end]
 
-            print('{} - {} = {}'.format(end, start, end-start))
-            print(song.duration_seconds)
             song.export(
-                timestamps[index]['name']+'.mp3',
+                'downloads/'+title+'/'+timestamps[index]['name']+'.mp3',
                 format='mp3',
                 tags={
                     'artist': author,
@@ -71,4 +75,4 @@ def main():
                 },
                 cover=cover
             )
-
+    shutil.rmtree('./tmp')

@@ -1,5 +1,5 @@
 import requests
-from os.path import splitext
+from os.path import splitext, abspath
 
 
 def to_seconds(timestamp):
@@ -17,9 +17,9 @@ def to_seconds(timestamp):
         return hours + minutes + seconds
 
 
-def download_image(url):
+def download_image(url, output_path):
     r = requests.get(url, allow_redirects=True)
     filename, ext = splitext(url.rsplit('?')[0])
-    path = 'cover'+ext
+    path = output_path+'/cover'+ext
     open(path, 'wb').write(r.content)
-    return path
+    return abspath(path)
