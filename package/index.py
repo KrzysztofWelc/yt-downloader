@@ -19,22 +19,23 @@ class Downloader:
         title = self.yt.title
 
         mp4_file = self.yt.streams.filter(file_extension='mp4').first().download(output_path=download_dir)
-        file, extension = os.path.splitext(mp4_file)
-        mp3_file = file + '.mp3'
+        # file, extension = os.path.splitext(mp4_file)
+        # mp3_file = title + '.mp3'
 
-        videoClip = VideoFileClip(mp4_file)
-        audioclip = videoClip.audio
-        audioclip.write_audiofile(mp3_file)
-        audioclip.close()
-        videoClip.close()
-        os.remove(mp4_file)
+        # videoClip = VideoFileClip(mp4_file)
+        # audioclip = videoClip.audio
+        # audioclip.write_audiofile(mp3_file)
+        # audioclip.close()
+        # videoClip.close()
+
+        audio = AudioSegment.from_file(mp4_file)
 
         if self.splitable:
             print(1)
             self.split()
         else:
             print(2)
-            audio = AudioSegment.from_mp3(mp3_file)
+
             audio.export(
                 'downloads/' + title + '.mp3',
                 format='mp3',
@@ -45,6 +46,7 @@ class Downloader:
                 cover=cover
             )
 
+        os.remove(mp4_file)
         shutil.rmtree('./tmp')
 
     def split(self):
